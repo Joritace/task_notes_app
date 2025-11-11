@@ -1,31 +1,37 @@
 class TaskItem {
-  int? id;
+  int? id; // optional for new tasks before inserting in DB
   String title;
-  String description;
   String priority;
+  String description;
   bool isCompleted;
 
   TaskItem({
     this.id,
     required this.title,
-    required this.description,
     required this.priority,
+    required this.description,
     this.isCompleted = false,
   });
 
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'description': description,
-        'priority': priority,
-        'isCompleted': isCompleted ? 1 : 0,
-      };
+  // Convert TaskItem object to JSON map
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'priority': priority,
+      'description': description,
+      'isCompleted': isCompleted ? 1 : 0, // store as int for SQFLite
+    };
+  }
 
-  factory TaskItem.fromJson(Map<String, dynamic> json) => TaskItem(
-        id: json['id'],
-        title: json['title'],
-        description: json['description'],
-        priority: json['priority'],
-        isCompleted: json['isCompleted'] == 1,
-      );
+  // Create TaskItem object from JSON map
+  factory TaskItem.fromJson(Map<String, dynamic> json) {
+    return TaskItem(
+      id: json['id'],
+      title: json['title'],
+      priority: json['priority'],
+      description: json['description'],
+      isCompleted: json['isCompleted'] == 1 ? true : false,
+    );
+  }
 }
