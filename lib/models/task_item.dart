@@ -1,5 +1,5 @@
 class TaskItem {
-  int? id; // optional for new tasks before inserting in DB
+  int? id;
   String title;
   String priority;
   String description;

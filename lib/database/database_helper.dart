@@ -17,7 +17,7 @@ class DatabaseHelper {
     return _database!;
   }
 
-  // ✅ Initialize database
+  // Initialize the database
   Future<Database> initDB() async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, 'tasks.db');
@@ -29,7 +29,7 @@ class DatabaseHelper {
     );
   }
 
-  // ✅ Create tables
+  // Create table
   Future _createTables(Database db, int version) async {
     await db.execute('''
       CREATE TABLE tasks(
@@ -42,13 +42,13 @@ class DatabaseHelper {
     ''');
   }
 
-  // ✅ Insert TaskItem
+  // Insert TaskItem
   Future<int> insertTask(TaskItem task) async {
     final db = await database;
     return await db.insert('tasks', task.toJson());
   }
 
-  // ✅ Get all tasks
+  //Get all tasks
   Future<List<TaskItem>> fetchTasks() async {
     final db = await database;
     final maps = await db.query('tasks');
@@ -56,9 +56,20 @@ class DatabaseHelper {
     return maps.map((json) => TaskItem.fromJson(json)).toList();
   }
 
-  // ✅ BONUS: Delete a task
+  // Delete a task
   Future<int> deleteTask(int id) async {
     final db = await database;
     return await db.delete('tasks', where: 'id = ?', whereArgs: [id]);
   }
+  //edit a task
+  Future<int> updateTask(TaskItem task) async {
+    final db = await database;
+    return await db.update(
+      'tasks',
+      task.toJson(),
+      where: 'id = ?',
+      whereArgs: [task.id],
+    );
+  }
+
 }

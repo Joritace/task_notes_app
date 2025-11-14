@@ -3,7 +3,9 @@ import '../database/database_helper.dart';
 import '../models/task_item.dart';
 
 class TaskScreen extends StatefulWidget {
-  const TaskScreen({super.key});
+  final TaskItem? task;
+
+  const TaskScreen({super.key, this.task});
 
   @override
   State<TaskScreen> createState() => _TaskScreenState();
@@ -11,49 +13,65 @@ class TaskScreen extends StatefulWidget {
 
 class _TaskScreenState extends State<TaskScreen> {
   final _titleController = TextEditingController();
+  String _priority = "Medium";
   final _descriptionController = TextEditingController();
 
-  String selectedPriority = "Medium"; // ✅ Default priority
+  @override
+  void initState() {
+    super.initState();
+
+
+    if (widget.task != null) {
+      _titleController.text = widget.task!.title;
+      _priority = widget.task!.priority;
+      _descriptionController.text = widget.task!.description;
+    }
+  }
 
   void saveTask() async {
-    final task = TaskItem(
-      title: _titleController.text.trim(),
-      priority: selectedPriority,     // ✅ Save dropdown value
-      description: _descriptionController.text.trim(),
-    );
+    if (widget.task == null) {
+      // new task
+      final newTask = TaskItem(
+        title: _titleController.text.trim(),
+        priority: _priority,
+        description: _descriptionController.text.trim(),
+      );
+      await DatabaseHelper.instance.insertTask(newTask);
+    } else {
+      // Update the existing task
+      final updatedTask = TaskItem(
+        id: widget.task!.id,
+        title: _titleController.text.trim(),
+        priority: _priority,
+        description: _descriptionController.text.trim(),
+      );
+      await DatabaseHelper.instance.updateTask(updatedTask);
+    }
 
-    await DatabaseHelper.instance.insertTask(task);
-
-    Navigator.pop(context); // Back to HomeScreen
+    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Add New Task"),
+        title: Text(widget.task == null ? "Add Task" : "Edit Task"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
               controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: "Task Title",
-              ),
+              decoration: const InputDecoration(labelText: "Task Title"),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
 
-            // ✅ Dropdown for Priority
+            // dropdown to choose priority level
             DropdownButtonFormField<String>(
-              value: selectedPriority,
-              decoration: const InputDecoration(
-                labelText: "Priority",
-                border: OutlineInputBorder(),
-              ),
+              value: _priority,
+              decoration: const InputDecoration(labelText: "Priority"),
               items: const [
                 DropdownMenuItem(value: "High", child: Text("High")),
                 DropdownMenuItem(value: "Medium", child: Text("Medium")),
@@ -61,18 +79,16 @@ class _TaskScreenState extends State<TaskScreen> {
               ],
               onChanged: (value) {
                 setState(() {
-                  selectedPriority = value!;
+                  _priority = value!;
                 });
               },
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
 
             TextField(
               controller: _descriptionController,
-              decoration: const InputDecoration(
-                labelText: "Description",
-              ),
+              decoration: const InputDecoration(labelText: "Description"),
               maxLines: 3,
             ),
 
@@ -80,11 +96,12 @@ class _TaskScreenState extends State<TaskScreen> {
 
             ElevatedButton(
               onPressed: saveTask,
-              child: const Text("Save Task"),
-            )
+              child: Text(widget.task == null ? "Save Task" : "Update Task"),
+            ),
           ],
         ),
       ),
     );
   }
 }
+
